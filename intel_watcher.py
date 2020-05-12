@@ -109,8 +109,6 @@ if __name__ == "__main__":
     cursor = mydb.cursor()
     queries = create_queries(config, cursor)
 
-    mydb = connect(host = config.db_host, user = config.db_user, password = config.db_password, database = config.db_name_scan, port = config.db_port, autocommit = True)
-    cursor = mydb.cursor()
     scraper = IntelMap(config.cookie)
 
     if not scraper.getCookieStatus():
