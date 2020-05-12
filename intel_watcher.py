@@ -13,6 +13,13 @@ from util.ingress import IntelMap, MapTiles
 from util.config import create_config
 from util.queries import create_queries
 
+def connect_db(config):
+    mydb = connect(host = config.db_host, user = config.db_user, password = config.db_password, database = config.db_name_scan, port = config.db_port, autocommit = True)
+    cursor = mydb.cursor()
+    queries = create_queries(config, cursor)
+
+    return queries
+
 def update_wp(wp_type, points):
     updated = 0
     print(f"Found {len(points)} {wp_type}s")
@@ -77,6 +84,7 @@ def scrape_all():
             print("Something went wrong when parsing Portals")
             print(e)
     
+    queries = connect_db(config)
     updated_portals = 0
     for idx, val in enumerate(portal_ids):
         lat = (portals[idx][2])/1e6
@@ -105,9 +113,7 @@ if __name__ == "__main__":
     config_path = args.config
 
     config = create_config(config_path)
-    mydb = connect(host = config.db_host, user = config.db_user, password = config.db_password, database = config.db_name_scan, port = config.db_port, autocommit = True)
-    cursor = mydb.cursor()
-    queries = create_queries(config, cursor)
+    
 
     scraper = IntelMap(config.cookie)
 
@@ -131,6 +137,7 @@ if __name__ == "__main__":
     print("Got everything. Starting to scrape now.")
 
     if args.update:
+        queries = connect_db(config)
         gyms = queries.get_empty_gyms()
         stops = queries.get_empty_stops()
         update_wp("Gym", gyms)
@@ -138,6 +145,3 @@ if __name__ == "__main__":
         sys.exit()
 
     scrape_all()
-
-    cursor.close()
-    mydb.close()
