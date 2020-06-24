@@ -5,13 +5,18 @@ import sys
 #import datetime
 import requests
 import time
+import timeit
 
 #from configparser import ConfigParser
 from pymysql import connect
+from concurrent.futures.thread import ThreadPoolExecutor
+from rich.progress import Progress
 
 from util.ingress import IntelMap, MapTiles
 from util.config import create_config
 from util.queries import create_queries
+
+tiles_data = []
 
 def connect_db(config):
     mydb = connect(host = config.db_host, user = config.db_user, password = config.db_password, database = config.db_name_scan, port = config.db_port, autocommit = True)
@@ -39,34 +44,41 @@ def update_wp(wp_type, points):
     print(f"Updated {updated} {wp_type}s")
     print("")
 
+def scrape_tile(tile, scraper, progress, task):
+    iitc_xtile = int(tile[0])
+    iitc_ytile = int(tile[1])
+    iitc_tile_name  = f"15_{iitc_xtile}_{iitc_ytile}_0_8_100"
+
+    tries = 0
+    progress.update(task, advance=1)
+    while tries < 3:
+        try:
+            tiles_data.append(scraper.get_entities([iitc_tile_name]))
+            tries = 3
+        except Exception as e:
+            tries += 1
+            print(f"Error with tile {iitc_tile_name} - Retry {tries}/3")
+
 def scrape_all():
-    zoom = 15
     bbox = list(config.bbox.split(';'))
     tiles = []
     for cord in bbox:
         bbox_cord = list(map(float, cord.split(',')))
-        bbox_cord.append(zoom)
+        bbox_cord.append(15)
         mTiles = MapTiles(bbox_cord)
         tiles = tiles + mTiles.getTiles()
     total_tiles = len(tiles)
-    print(f"Total tiles to scrape: {total_tiles} - Starting now")
+    print(f"Total tiles to scrape: {total_tiles}")
 
     timed_out_items = []
     portals = []
     portal_ids = []
-    tiles_data = []
-    for idx, tile in enumerate(tiles):
-        iitc_xtile = int(tile[0])
-        iitc_ytile = int(tile[1])
-        
-        iitc_tile_name  = f"{zoom}_{iitc_xtile}_{iitc_ytile}_0_8_100"
-        current_tile = idx + 1
-        print(f"[{current_tile}/{total_tiles}]")
-        try:
-            tiles_data.append(scraper.get_entities([iitc_tile_name]))
-        except Exception as e:
-            print(f"Something went wrong with tile {iitc_tile_name}")
-            print(e)
+    with Progress() as progress:
+        task = progress.add_task("Scraping Portals", total=total_tiles)
+        with ThreadPoolExecutor(max_workers=config.workers) as executor: 
+            for tile in tiles:
+                executor.submit(scrape_tile, tile, scraper, progress, task)
+
     for tile_data in tiles_data:
         try:
             if "result" in tile_data:
@@ -86,18 +98,21 @@ def scrape_all():
     
     queries = connect_db(config)
     updated_portals = 0
-    for idx, val in enumerate(portal_ids):
-        lat = (portals[idx][2])/1e6
-        lon = (portals[idx][3])/1e6
-        p_name = portals[idx][portal_name]
-        p_url = portals[idx][portal_url]
-        updated_ts = int(time.time())
-        try:
-            queries.update_portal(val, p_name, p_url, lat, lon, updated_ts)
-            updated_portals += 1
-        except Exception as e:
-            print(f"Failed putting Portal {p_name} ({val}) in your DB")
-            print(e)
+    with Progress() as progress:
+        task = progress.add_task("Updating DB", total=len(portal_ids))
+        for idx, val in enumerate(portal_ids):
+            lat = (portals[idx][2])/1e6
+            lon = (portals[idx][3])/1e6
+            p_name = portals[idx][portal_name]
+            p_url = portals[idx][portal_url]
+            updated_ts = int(time.time())
+            try:
+                queries.update_portal(val, p_name, p_url, lat, lon, updated_ts)
+                updated_portals += 1
+            except Exception as e:
+                print(f"Failed putting Portal {p_name} ({val}) in your DB")
+                print(e)
+            progress.update(task, advance=1)
 
     print(f"Done. Put {updated_portals} Portals in your DB.")
 
@@ -109,6 +124,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--update", action='store_true', help="Updates all Gyms and Stops using Portal info")
     parser.add_argument("-c", "--config", default="config.ini", help="Config file to use")
+    parser.add_argument("-w", "--workers", default=0, help="Workers")
     args = parser.parse_args()
     config_path = args.config
 
@@ -144,4 +160,10 @@ if __name__ == "__main__":
         update_wp("Stop", stops)
         sys.exit()
 
+    if int(args.workers) > 0:
+        config.workers = int(args.workers)
+
+    start = timeit.default_timer()
     scrape_all()
+    stop = timeit.default_timer()
+    print(f"Total runtime: {round(stop - start, 1)} seconds")

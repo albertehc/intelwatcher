@@ -2,6 +2,7 @@
 bbox = 0.00,0.00,0.00,0.00;1.00,1.00,1.00,1.00;2.00,2.00,2.00,2.00
 cookie_webhooks = False
 webhook_url = webhook_url
+workers = 3
 
 [DB]
 scanner = mad/rdm
