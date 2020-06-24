@@ -140,7 +140,7 @@ if __name__ == "__main__":
                 "username": "Cookie Alarm",
                 "avatar_url": "https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/237/cookie_1f36a.png",
                 "embeds": [{
-                    "description": ":cookie: Your Intel Cookie probably ran out! Please get a new one or check your account.",
+                    "description": f":cookie: Your Intel Cookie probably ran out! Please get a new one or check your account.\n{config.cookie_text}",
                     "color": 16073282
                 }]
             }

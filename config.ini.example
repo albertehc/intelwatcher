@@ -1,6 +1,7 @@
 [Config]
 bbox = 0.00,0.00,0.00,0.00;1.00,1.00,1.00,1.00;2.00,2.00,2.00,2.00
 cookie_webhooks = False
+custom_cookie_text = 
 webhook_url = webhook_url
 workers = 3
 
