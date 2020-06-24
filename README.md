@@ -38,4 +38,12 @@ Note that you can use multiple bboxes in your config by seperating them with `;`
 ### Running the script
 Now proceed as usual: `pip3 install -r requirements.txt`, fill in the config and you're done.
 - `python3 intel_watcher.py` to scrape the area
-- `python3 intel_watcher.py -u` to update Gyms and Stops with missing title andhoto
+- `python3 intel_watcher.py -u` to update Gyms and Stops with missing title and photo
+
+### Threading
+Intel Watcher uses threading for faster runtimes. So, instead of scraping every page one by one, it can scrape multiple pages at once. Please note the following:
+- "Workers" defines the amount of pages to be scraped simultaneously. The more workers you set, the faster the script will scrape
+- You can set the amount of workers in the config. I recommend to just set a few, since the script is just running in the background
+- When running the script manually, you can use the -w argument to set more workers. E.g. `python3 intel_watcher.py -w 20` would start the script with 20 workers
+- Attention: It's very likely that you'll be banned faster when using lots of workers, so be responsible with them
+- Don't overdo the workers. I scrape 306 tiles and 20 workers are faster than 300 (and even 30) for me - find your sweet spot
