@@ -14,7 +14,7 @@ Intel Watcher uses PMSFs database structure. If you have PMSF set up, just put i
 Intel Watcher needs to be able to log into the Intel Map in order to get Portal info. It does that with the login cookie.
 
 #### Notes
-- Use a burner Account to the Cookie (!!) **Scraper Accounts have been banned before**
+- Use a burner Account to get the Cookie (!!) **Scraper Accounts have been banned before**
 - The cookie runs out after 14 days. Intel Watcher can send Discord Webhooks when that happens, so you can manually get a new one. To re-new your cookie, follow below steps but begin with 2.
 
 ### Get a cookie
@@ -29,7 +29,7 @@ Intel Watcher needs to be able to log into the Intel Map in order to get Portal 
 5. Now copy everything after `cookie:` (the content highlighted in the red box) and paste it into `cookie.txt`
 
 ### BBOX
-To set up an area to scrape, go to [bboxfinder.com](http://bboxfinder.com), and select your desired area using the rectangle tool. Now copy the String after `Box` in the bottom field.
+To set up an area to scrape, go to [bboxfinder.com](http://bboxfinder.com) and select your desired area using the rectangle tool. Now copy the String after `Box` in the bottom field.
 
 Note that you can use multiple bboxes in your config by seperating them with `;`. e.g. `-0.527344,5.441022,27.246094,20.138470;2.245674,48.795557,2.484970,48.912572`
 
