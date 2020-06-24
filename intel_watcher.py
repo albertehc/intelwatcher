@@ -146,7 +146,7 @@ if __name__ == "__main__":
             }
             result = requests.post(config.wh_url, json=data)
             print(result)
-        sys.exit()
+        sys.exit(1)
     else:
         print("Cookie works!")
 
