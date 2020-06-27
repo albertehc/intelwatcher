@@ -27,16 +27,16 @@ class create_queries():
 
     def get_empty_gyms(self):
         if self.schema == "mad":
-            self.cursor.execute(f"SELECT gym.gym_id FROM gym LEFT JOIN gymdetails on gym.gym_id = gymdetails.gym_id WHERE name = 'unknown';")
+            self.cursor.execute(f"SELECT gym.gym_id FROM gym LEFT JOIN gymdetails on gym.gym_id = gymdetails.gym_id;")
         elif self.schema == "rdm":
-            self.cursor.execute(f"SELECT id FROM gym WHERE name IS NULL;")
+            self.cursor.execute(f"SELECT id FROM gym;")
         gyms = self.cursor.fetchall()
         return gyms
 
     def get_empty_stops(self):
         if self.schema == "mad":
-            self.cursor.execute(f"SELECT pokestop_id FROM pokestop WHERE name IS NULL;")
+            self.cursor.execute(f"SELECT pokestop_id FROM pokestop;")
         elif self.schema == "rdm":
-            self.cursor.execute(f"SELECT id FROM pokestop WHERE name IS NULL;")
+            self.cursor.execute(f"SELECT id FROM pokestop;")
         stops = self.cursor.fetchall()
         return stops
